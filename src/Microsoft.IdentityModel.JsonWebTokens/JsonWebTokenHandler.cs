@@ -634,6 +634,18 @@ namespace Microsoft.IdentityModel.JsonWebTokens
                     continue;
                 }
 
+                if (validationParameters.AcceptedAlgorithms != null && validationParameters.AcceptedAlgorithms.Any() && !validationParameters.AcceptedAlgorithms.Contains(jwtToken.Enc, StringComparer.OrdinalIgnoreCase))
+                {
+                    LogHelper.LogWarning(TokenLogMessages.IDX10696, jwtToken.Enc);
+                    continue;
+                }
+
+                if (validationParameters.AcceptedAlgorithmValidator != null && !validationParameters.AcceptedAlgorithmValidator(jwtToken.Enc, key))
+                {
+                    LogHelper.LogWarning(TokenLogMessages.IDX10697, jwtToken.Enc, key);
+                    continue;
+                }
+
                 try
                 {
                     decryptedTokenBytes = DecryptToken(jwtToken, cryptoProviderFactory, key);
@@ -1293,6 +1305,18 @@ namespace Microsoft.IdentityModel.JsonWebTokens
             if (!cryptoProviderFactory.IsSupportedAlgorithm(algorithm, key))
             {
                 LogHelper.LogInformation(LogMessages.IDX14000, algorithm, key);
+                return false;
+            }
+
+            if (validationParameters.AcceptedAlgorithms != null && validationParameters.AcceptedAlgorithms.Any() && !validationParameters.AcceptedAlgorithms.Contains(algorithm, StringComparer.OrdinalIgnoreCase))
+            {
+                LogHelper.LogInformation(TokenLogMessages.IDX10696, algorithm);
+                return false;
+            }
+
+            if (validationParameters.AcceptedAlgorithmValidator != null && !validationParameters.AcceptedAlgorithmValidator(algorithm, key))
+            {
+                LogHelper.LogInformation(TokenLogMessages.IDX10697, algorithm, key);
                 return false;
             }
 

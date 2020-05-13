@@ -34,6 +34,14 @@ using Microsoft.IdentityModel.Logging;
 namespace Microsoft.IdentityModel.Tokens
 {
     /// <summary>
+    /// Definition for AcceptedAlgorithmValidator
+    /// </summary>
+    /// <param name="algorithm">The algorithm to validate.</param>
+    /// <param name="securityKey">THe securityKey to validate.</param>
+    /// <returns><c>true</c> if the algorithm is considered valid</returns>
+    public delegate bool AcceptedAlgorithmValidator(string algorithm, SecurityKey securityKey);
+
+    /// <summary>
     /// Definition for AudienceValidator.
     /// </summary>
     /// <param name="audiences">The audiences found in the <see cref="SecurityToken"/>.</param>
@@ -156,6 +164,8 @@ namespace Microsoft.IdentityModel.Tokens
             if (other == null)
                 throw LogHelper.LogExceptionMessage(new ArgumentNullException(nameof(other)));
 
+            AcceptedAlgorithms = other.AcceptedAlgorithms;
+            AcceptedAlgorithmValidator = other.AcceptedAlgorithmValidator;
             ActorValidationParameters = other.ActorValidationParameters?.Clone();
             AudienceValidator = other.AudienceValidator;
             _authenticationType = other._authenticationType;
@@ -216,6 +226,19 @@ namespace Microsoft.IdentityModel.Tokens
             ValidateLifetime = true;
             ValidateTokenReplay = false;
         }
+
+        /// <summary>
+        /// Gets or sets the accepted algorithms for cryptographic operations.
+        /// </summary>
+        /// <remarks>
+        /// If set to a non-empty collection, only the algorithms listed will be considered valid.
+        /// </remarks>
+        public IEnumerable<string> AcceptedAlgorithms { get; set; }
+
+        /// <summary>
+        /// Gets or sets a delegate used to validate the cryptographic algorithm used.
+        /// </summary>
+        public AcceptedAlgorithmValidator AcceptedAlgorithmValidator { get; set; }
 
         /// <summary>
         /// Gets or sets <see cref="TokenValidationParameters"/>.
